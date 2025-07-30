@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Te Amo Noelia Huanaco</title>
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      overflow: hidden;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+	canvas {
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+	}
+	.overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+	}
+	.center-message {
+      font-family: 'Courier New', monospace;
+      color: #ff69b4;
+      font-size: 6rem;
+      text-align: center;
+      opacity: 0.8;
+      text-shadow: 0 0 10px rgba(255, 105, 180, 0.7);
+      animation: pulse 3s infinite;
+	}
+	@keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+        opacity: 0.8;
+      }
+      50% {
+        transform: scale(1.05);
+        opacity: 1;
+	  }
+	}
+	@media (max-width: 768px) {
+      .center-message {
+        font-size: 3rem;
+      }
+	}
+	.heart-cursor {
+      position: absolute;
+      width: 32px;
+      height: 32px;
+      z-index: 9999;
+      pointer-events: none;
+      transition: transform 0.1s ease;
+      filter: drop-shadow(0 0 4px #ff69b4);
+    }
+    #audio-control {
+      position: absolute;
+      opacity: 0;
+      z-index: -1;
+	}
+  </style>
+</head>
+<body>
+<canvas id="canvas" width="900" height="702"></canvas>
+<div class="overlay">
+  <div class="center-message">TE AMO MI NEGRITA💖</div>
+</div>
+<script>
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
+  const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const baseFontSize = 16;
+ctx.font = `bold ${baseFontSize}px monospace`;
+const text = "TE AMO";
+const textWidth = ctx.measureText(text).width;
+const columns = Math.floor(canvas.width / textWidth);
+const drops = new Array(columns).fill(1);
+const particles = [];
+
+function drawMatrix() {
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#ff1493';
+  ctx.font = `bold ${baseFontSize}px monospace`;
+
+  for (let i = 0; i < drops.length; i++) {
+    const x = i * textWidth;
+    const y = drops[i] * baseFontSize;
+    ctx.shadowColor = "rgba(255, 105, 180, 0.7)";
+      ctx.shadowBlur = 15; // Aumentado el blur para mejor efecto
+      ctx.fillText(text, x, y);
+      
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+      ctx.lineWidth = 2;
+      ctx.strokeText(text, x, y);
+      ctx.fillText(text, x, y);
+
+      if (y > canvas.height && Math.random() > 0.950) {
+        drops[i] = 0;
+      }
+
+
+    drops[i] += 1; // velocidad ligeramente aumentada
+  }
+}
+
+function drawParticles() {
+  particles.forEach((p, index) => {
+    ctx.globalAlpha = p.alpha;
+    ctx.font = `bold ${p.size}px monospace`;
+    ctx.fillStyle = p.color;
+    ctx.shadowColor = p.color;
+    ctx.shadowBlur = 20;
+    ctx.fillText("TE AMO", p.x, p.y);
+    ctx.shadowBlur = 0;
+
+    p.x += p.vx;
+    p.y += p.vy;
+    p.alpha -= 0.01;
+    if (p.alpha <= 0) {
+      particles.splice(index, 1);
+    }
+  });
+  ctx.globalAlpha = 1;
+}
+
+function handleInteraction(e) {
+  const x = e.clientX || e.touches?.[0]?.clientX;
+  const y = e.clientY || e.touches?.[0]?.clientY;
+
+  for (let i = 0; i < 16; i++) {
+    particles.push({
+      x,
+      y,
+      vx: (Math.random() - 0.5) * 6,
+      vy: (Math.random() - 0.5) * 6,
+      alpha: 1,
+      size: baseFontSize + Math.random() * 10,
+      color: `#${Math.random() > 0.5 ? 'ff69b4' : 'ff1493'}`
+    });
+  }
+}
+
+canvas.addEventListener('click', handleInteraction);
+
+function animate() {
+  drawMatrix();
+  drawParticles();
+  requestAnimationFrame(animate);
+}
+
+animate();
+
+window.addEventListener('resize', () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  ctx.font = `bold ${baseFontSize}px monospace`;
+  const newColumns = Math.floor(canvas.width / textWidth);
+  drops.length = newColumns;
+  drops.fill(1);
+  });
+</script>
+</html>
